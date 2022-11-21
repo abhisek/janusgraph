@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  workflow_dispatch:
+    # To enable manual trigger
+
+  push:
+    branches:
+      - master
+
+jobs:
+  mvn:
+    strategy:
+      matrix:
+        profile:
+          - name: 'compile-with-JDK11'
+            jdk: 11
+            args: '-DskipTests compile'
+      fail-fast: false
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+    # Setup environment using SafeDep pacman
+    - uses: actions/checkout@v3
+      name: Checkout SafeDep Pacman
+      with:
+        repository: 'safedep/pacman'
+        path: .safedep/pacman
+        fetch-depth: 0
+    - name: Configure environment with Pacman
+      run: |
+        ./.safedep/pacman/pacman.sh configure-from-env && \
+        ./.safedep/pacman/pacman.sh setup-maven
+      env:
+        GATEWAY_URL: ${{ secrets.GATEWAY_URL }}
+        GATEWAY_USERNAME: ${{ secrets.GATEWAY_USERNAME }}
+        GATEWAY_PASSWORD: ${{ secrets.GATEWAY_PASSWORD }}
+        GATEWAY_PROJECT_ID: ${{ github.event.repository.name }}
+
+    # Checkout source code and run build
+    - uses: actions/checkout@v3
+    - name: Set up JDK ${{ matrix.profile.jdk }}
+      uses: actions/setup-java@v1
+      with:
+        java-version: ${{ matrix.profile.jdk }}
+    - name: Build with Maven (${{ matrix.profile.name }})
+      run: mvn -B -V -e -ntp "-Dstyle.color=always" ${{ matrix.profile.args }}
+      env:
+        MAVEN_OPTS: -Djansi.force=true
+
