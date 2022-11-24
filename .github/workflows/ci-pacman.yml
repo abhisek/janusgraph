@@ -15,7 +15,7 @@ jobs:
         profile:
           - name: 'compile-with-JDK11'
             jdk: 11
-            args: '-DskipTests -Drat.skip=true compile'
+            args: '-DskipTests -Drat.skip=true -Dmaven.javadoc.skip=true clean install'
       fail-fast: false
     timeout-minutes: 30
     runs-on: ubuntu-latest
@@ -45,7 +45,7 @@ jobs:
         GATEWAY_PROJECT_ID: ${{ github.event.repository.name }}
 
     - name: Build with Maven (${{ matrix.profile.name }})
-      run: mvn -B -V -e "-Dstyle.color=always" ${{ matrix.profile.args }}
+      run: mvn -B -V -e -ntp "-Dstyle.color=always" --projects janusgraph-all -Pjanusgraph-cache ${{ matrix.profile.args }}
       env:
         MAVEN_OPTS: -Djansi.force=true
 
