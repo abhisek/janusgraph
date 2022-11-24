@@ -45,7 +45,7 @@ jobs:
         GATEWAY_PROJECT_ID: ${{ github.event.repository.name }}
 
     - name: Build with Maven (${{ matrix.profile.name }})
-      run: mvn -B -V -e -ntp "-Dstyle.color=always" --projects janusgraph-all -Pjanusgraph-cache ${{ matrix.profile.args }}
+      run: mvn -B -V -e -ntp -am "-Dstyle.color=always" --projects janusgraph-all -Pjanusgraph-cache ${{ matrix.profile.args }}
       env:
         MAVEN_OPTS: -Djansi.force=true
 
