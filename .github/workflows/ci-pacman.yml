@@ -28,21 +28,13 @@ jobs:
         java-version: ${{ matrix.profile.jdk }}
 
     # Setup environment using SafeDep pacman
-    - uses: actions/checkout@v3
-      name: Checkout SafeDep Pacman
+    - name: Configure environment to use SafeDep Gateway
+      uses: safedep/pacman@main
       with:
-        repository: 'safedep/pacman'
-        path: .safedep/pacman
-        fetch-depth: 0
-    - name: Configure environment with Pacman
-      run: |
-        ./.safedep/pacman/pacman.sh configure-from-env && \
-        ./.safedep/pacman/pacman.sh setup-maven
-      env:
-        GATEWAY_URL: ${{ secrets.GATEWAY_URL }}
-        GATEWAY_USERNAME: ${{ secrets.GATEWAY_USERNAME }}
-        GATEWAY_PASSWORD: ${{ secrets.GATEWAY_PASSWORD }}
-        GATEWAY_PROJECT_ID: ${{ github.event.repository.name }}
+        gateway_url: ${{ secrets.GATEWAY_URL }}
+        gateway_username: ${{ secrets.GATEWAY_USERNAME }}
+        gateway_password: ${{ secrets.GATEWAY_PASSWORD }}
+        package_manager: maven
 
     - name: Build with Maven (${{ matrix.profile.name }})
       run: mvn -B -V -e -ntp -am "-Dstyle.color=always" --projects janusgraph-all -Pjanusgraph-cache ${{ matrix.profile.args }}
